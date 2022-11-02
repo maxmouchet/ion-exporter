@@ -1,0 +1,32 @@
+[tool.poetry]
+name = "ion-exporter"
+version = "0.1.0"
+description = "Prometheus exporter for Aruba Instant On devices."
+authors = ["Maxime Mouchet <max@maxmouchet.com>"]
+readme = "README.md"
+license = "MIT"
+
+[tool.poetry.dependencies]
+python = "^3.10"
+httpx = "^0.23.0"
+more-itertools = "^9.0.0"
+prometheus-client = "^0.15.0"
+pydantic = "^1.10.2"
+
+[tool.mypy]
+disallow_untyped_calls = true
+disallow_untyped_defs = true
+ignore_missing_imports = true
+implicit_reexport = false
+no_implicit_optional = true
+strict_equality = true
+strict_optional = true
+warn_no_return = true
+warn_redundant_casts = true
+warn_return_any = true
+warn_unreachable = true
+warn_unused_ignores = true
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
