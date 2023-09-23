@@ -199,7 +199,7 @@ class Collector:
                             port_labels,
                         ),
                     ]
-                for radio in device["radios"]:
+                for radio in (device.get("radios") or []):
                     radio_labels = device_labels | {"radio_id": radio["id"]}
                     metrics += [
                         (
