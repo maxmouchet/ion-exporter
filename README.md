@@ -2,6 +2,8 @@
 
 Prometheus exporter for [Aruba Instant On](https://www.arubainstanton.com) devices.
 
+![Dashboard Screenshot](dashboard.png)
+
 ## Usage
 
 ```bash
