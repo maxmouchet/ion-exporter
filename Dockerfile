@@ -1,4 +1,4 @@
-FROM python:3.11-alpine
+FROM python:alpine
 WORKDIR /app
 
 RUN apk add --no-cache poetry tini
