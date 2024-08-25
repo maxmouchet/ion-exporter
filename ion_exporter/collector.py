@@ -1,62 +1,25 @@
 from collections.abc import Iterator
-from typing import cast
 
-import httpx
 from more_itertools import map_reduce
 from prometheus_client.metrics_core import CounterMetricFamily, GaugeMetricFamily
 
 from ion_exporter.logger import logger
-from ion_exporter.sso import SSOClient
+from ion_client.client import Client
 
 
 class Collector:
-    DEFAULT_BASE_URL = "https://nb.portal.arubainstanton.com/api"
-
     def __init__(
         self,
         username: str,
         password: str,
         otp: str | None,
-        base_url: str = DEFAULT_BASE_URL,
-        sso: SSOClient | None = None,
     ):
-        self.username = username
-        self.password = password
-        self.otp = otp
-        if not sso:
-            sso = SSOClient()
-        self.sso = sso
-        self.client = httpx.Client(base_url=base_url)
-        self.access_token = None
-        self.refresh_token = None
-
-    def reauthenticate(self) -> None:
-        try:
-            logger.info("Refreshing token...")
-            tokens = self.sso.refresh_token(cast(str, self.refresh_token))
-            self.access_token = tokens["access_token"]
-        except httpx.HTTPStatusError:
-            logger.info("Refresh failed, re-authenticating...")
-            tokens = self.sso.fetch_tokens(self.username, self.password, self.otp)
-            self.access_token = tokens["access_token"]
-            self.refresh_token = tokens["refresh_token"]
+        self.client = Client(
+            username=username, password=password, otp=otp, api_version=10
+        )
 
     def json(self, path: str) -> dict:
-        logger.info("Fetching %s...", path)
-        headers = {
-            "Authorization": f"Bearer {self.access_token}",
-            "X-ION-API-VERSION": "10",
-        }
-        res = self.client.get(path, headers=headers)
-        try:
-            res.raise_for_status()
-        except httpx.HTTPStatusError:
-            self.reauthenticate()
-            headers["Authorization"] = f"Bearer {self.access_token}"
-            res = self.client.get(path, headers=headers)
-            res.raise_for_status()
-        data = res.json()
-        return cast(dict, data["elements"])
+        return self.client.json(path).get("elements", [])
 
     def collect(self) -> Iterator[CounterMetricFamily | GaugeMetricFamily]:
         logger.info("Starting collection")
@@ -199,7 +162,8 @@ class Collector:
                             port_labels,
                         ),
                     ]
-                for radio in (device.get("radios") or []):
+                radios = device.get("radios") or []
+                for radio in radios:
                     radio_labels = device_labels | {"radio_id": radio["id"]}
                     metrics += [
                         (

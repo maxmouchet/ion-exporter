@@ -1,6 +1,7 @@
 from pydantic import Field
 from pydantic_settings import BaseSettings
 
+
 class Settings(BaseSettings):
     ion_username: str = Field(..., title="Instant On username")
     ion_password: str = Field(..., title="Instant On password")
